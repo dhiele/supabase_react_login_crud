@@ -1,30 +1,33 @@
-import './App.css';
-import { useState, useEffect } from 'react';
-import { supabase } from './supabase';
-import Login from './components/Login';
-import Tasks from './components/Tasks';
+import "bootstrap/dist/css/bootstrap.css";
+import { useEffect } from "react";
+import { Route, Routes, Navigate, useNavigate } from "react-router-dom";
+import Navbar from "./components/Navbar";
+import Home from "./pages/Home";
+import Login from "./pages/Login";
+import { supabase } from "./supabaseClient";
 
 function App() {
-  const [user, setUser] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_IN') {
-        setUser(session.user);
-      } else if (event === 'SIGNED_OUT') {
-        setUser(null);
+    supabase.auth.onAuthStateChange((_event, session) => {
+      if (session === null) {
+        navigate("/login", { replace: true });
+      } else {
+        navigate("/", { replace: true });
       }
     });
-
-    return () => {
-      authListener.unsubscribe();
-    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
-    <div>
-      {user ? <Tasks /> : <Login />}
-    </div>
+    <>
+      <Navbar exact />
+      <Routes>
+        <Route exact path="/" element={<Home />} />
+        <Route exact path="/login" element={<Login />} />
+      </Routes>
+    </>
   );
 }
 
