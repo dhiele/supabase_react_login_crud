@@ -1,23 +1,30 @@
 import logo from './logo.svg';
 import './App.css';
+import { useState, useEffect } from 'react';
+import { supabase } from './supabase';
+import Login from './components/Login';
+import Tasks from './components/Tasks';
 
 function App() {
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN') {
+        setUser(session.user);
+      } else if (event === 'SIGNED_OUT') {
+        setUser(null);
+      }
+    });
+
+    return () => {
+      authListener.unsubscribe();
+    };
+  }, []);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Dhiele
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div>
+      {user ? <Tasks /> : <Login />}
     </div>
   );
 }
